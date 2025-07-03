@@ -4,6 +4,7 @@ const dbConnection = require('./src/config/dbConnection')
 const userRoute = require('./src/routes/auth.routes')
 const apiRoute = require('./src/routes/product.routes')
 const productRoute = require('./src/routes/admin.routes')
+const cors = require('cors')
 
 const app = express()
 dotenv.config()
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+app.use(cors())
 
 const startServer = async () => {
     try {

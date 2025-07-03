@@ -1,6 +1,20 @@
 const Product = require("../models/product.model");
 const { v4: uuidv4 } = require('uuid');
 
+const getProducts = async (req, res) => {
+    try {
+        const products = await Product.find()
+        if (!products || products.length === 0) {
+            return res.status(204).json({ message: "No Data" })
+        }
+        return res.status(200).json({ products })
+    }
+    catch (err) {
+        console.error("Get Products Error:", err.message);
+        return res.status(500).json({ message: "Server error while fetching products." });
+    }
+}
+
 const addProducts = async (req, res) => {
     const {
         name,
@@ -42,7 +56,7 @@ const addProducts = async (req, res) => {
             colors,
             sizes,
             isFeatured: !!isFeatured,
-            sku // ✅ Add sku here
+            _id: sku
         });
 
         return res.status(201).json({
@@ -105,6 +119,7 @@ const deleteProduct = async (req, res) => {
 
 
 module.exports = {
+    getProducts,
     addProducts,
     updateProduct,
     deleteProduct

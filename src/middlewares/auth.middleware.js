@@ -15,14 +15,8 @@ const tokenVerification = async (req, res, next) => {
             if(er){
                 return {status:404,message:er.message}
             }
-            // console.log("authHeader ", er,user);
-            // if(user.isAdmin){
-
-            // }
         });
-        // if (!decoded) {
-        //     return res.status(404).json({ message: "Unauthorized Access" })
-        // }
+
 
         next();
     } catch (err) {
