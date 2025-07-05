@@ -1,7 +1,6 @@
 // controllers/product.controller.js
 
 const Product = require("../models/product.model");
-const tempDelete = require("../models/tempDelete.model");
 const { v4: uuidv4 } = require("uuid");
 const fileUploader = require("../utils/cloudinary");
 const mongoose = require("mongoose");
