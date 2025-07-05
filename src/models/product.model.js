@@ -74,7 +74,12 @@ const productSchema = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
+    productDelete: {
+        type: String,
+        enum: ["temporary", "permanent", "all"]
+    },
+
 })
 
 const Product = mongoose.model('Product', productSchema)
