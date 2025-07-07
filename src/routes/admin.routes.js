@@ -11,9 +11,7 @@ router.route('/product').get(tokenVerification,
     checkRole,
     getProducts)
 
-    .post(tokenVerification,
-        checkRole,
-        upload.array('images', 5),
+    .post(upload.array('images', 5),
         addProducts)
 
 
@@ -22,7 +20,7 @@ router.route('/product/:id')
         checkRole,
         updateProduct)
 
-    .delete(deleteProduct)
+    .delete(checkRole, tokenVerification, deleteProduct)
 
 router.route('/product/restore/:id').get(
     restoreProduct

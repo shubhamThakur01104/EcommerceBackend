@@ -24,60 +24,62 @@ const getProducts = async (req, res) => {
 /**
  * POST: Add new product with optional image upload
  */
-const addProducts = async (req, res) => {
-    try {
-        const {
-            name,
-            description,
-            price,
-            brand,
-            stockAmount,
-            category,
-            colors = [],
-            sizes = [],
-            isFeatured
-        } = req.body;
+    const addProducts = async (req, res) => {
+        try {
+            const {
+                name,
+                description,
+                price,
+                brand,
+                stockAmount,
+                category,
+                colors,
+                sizes,
+                isFeatured
+            } = req.body;
+            
 
-        if (!name || !description || !price || !brand || !stockAmount || !category) {
-            return res.status(400).json({ message: "All required fields must be filled." });
+            if (!name || !description || !price || !brand || !stockAmount || !category) {
+                return res.status(400).json({ message: "All required fields must be filled." });
+            }
+
+            const uploadResult = req.files?.length > 0 ? await fileUploader(req.files[0].path) : [];
+            const normalizedName = name.trim().toLowerCase();
+            const normalizedCategory = category.trim().toLowerCase();
+
+            const existingProduct = await Product.findOne({
+                name: normalizedName,
+                category: normalizedCategory,
+                colors: { $all: colors },
+                sizes: { $all: sizes },
+            });
+
+            if (existingProduct) {
+                return res.status(409).json({ message: "Product already exists." });
+            }
+
+            const sku = `PROD-${uuidv4()}`;
+            
+            await Product.create({
+                _id: sku,
+                name: normalizedName,
+                description: description.trim(),
+                price,
+                brand: brand.trim().toLowerCase(),
+                stockAmount,
+                category: normalizedCategory,
+                colors,
+                sizes,
+                isFeatured: !!isFeatured,
+                images: uploadResult
+            });
+            
+            return res.status(201).json({ message: "Product added successfully." });
+        } catch (err) {
+            console.error("Add Product Error:", err.message);
+            return res.status(500).json({ message: "Server error while adding product." });
         }
-
-        const uploadResult = req.files?.length > 0 ? await fileUploader(req.files[0].path) : [];
-        const normalizedName = name.trim().toLowerCase();
-        const normalizedCategory = category.trim().toLowerCase();
-
-        const existingProduct = await Product.findOne({
-            name: normalizedName,
-            category: normalizedCategory,
-            colors: { $all: colors },
-            sizes: { $all: sizes },
-        });
-
-        if (existingProduct) {
-            return res.status(409).json({ message: "Product already exists." });
-        }
-
-        const sku = `PROD-${uuidv4()}`;
-        await Product.create({
-            _id: sku,
-            name: normalizedName,
-            description: description.trim(),
-            price,
-            brand: brand.trim(),
-            stockAmount,
-            category: normalizedCategory,
-            colors,
-            sizes,
-            isFeatured: !!isFeatured,
-            images: uploadResult
-        });
-
-        return res.status(201).json({ message: "Product added successfully." });
-    } catch (err) {
-        console.error("Add Product Error:", err.message);
-        return res.status(500).json({ message: "Server error while adding product." });
-    }
-};
+    };
 
 /**
  * PUT: Update existing product

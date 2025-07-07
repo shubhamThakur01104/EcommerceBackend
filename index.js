@@ -4,6 +4,7 @@ const dbConnection = require('./src/config/dbConnection')
 const userRoute = require('./src/routes/auth.routes')
 const apiRoute = require('./src/routes/product.routes')
 const productRoute = require('./src/routes/admin.routes')
+const cartRoute = require('./src/routes/cart.routes')
 const cors = require('cors')
 
 const app = express()
@@ -24,6 +25,7 @@ const startServer = async () => {
         app.use('/user', userRoute)
         app.use('/api', apiRoute)
         app.use('/admin', productRoute)
+        app.use('/cart', cartRoute)
 
         app.listen(PORT, () => {
             console.log(`Server is successfully running on PORT : ${PORT}`);

@@ -58,12 +58,6 @@ const userSchema = new mongoose.Schema({
     image: {
         type: String,
     },
-    order: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Order'
-        }
-    ]
 }, {
     timestamps: true
 })
@@ -96,7 +90,7 @@ userSchema.methods.generateJWT = function () {
             process.env.JWT_SECRET, {
             expiresIn: '30d'
         })
-        return "Bearer " + token
+        return token
 
     }
     catch (err) {

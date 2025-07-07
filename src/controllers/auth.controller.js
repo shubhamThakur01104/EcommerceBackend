@@ -2,7 +2,7 @@ const User = require('../models/user.model')
 
 const signUp = async (req, res) => {
     try {
-        const { name, email, password, isAdmin } = req.body;
+        const { name, email, password, isAdmin } = req.body;        
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -51,15 +51,13 @@ const login = async (req, res) => {
         });
 
     } catch (err) {
-        // ✅ Handle Zod validation error
-
+        console.error("Login Error:", err.message);
+        res.status(500).json({ message: "Server Error" });
         return res.status(400).json({
             message: "Validation Error",
             errors: err.errors
         });
 
-        console.error("Login Error:", err.message);
-        res.status(500).json({ message: "Server Error" });
     }
 };
 

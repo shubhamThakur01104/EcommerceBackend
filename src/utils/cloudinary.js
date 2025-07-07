@@ -1,26 +1,26 @@
 const v2 = require("cloudinary");
-const fs = require("fs/promises"); // Use promises version of fs
+const fs = require("fs/promises");
 
 const fileUploader = async (filepath) => {
     try {
-        // Cloudinary configuration
         v2.config({
             cloud_name: process.env.CLOUDNAIRY_CLOUDNAME,
             api_key: process.env.CLOUDNAIRY_APIKEY,
             api_secret: process.env.CLOUDNAIRY_SECRET,
         });
 
-        // Upload file to Cloudinary
         const uploadResult = await v2.uploader.upload(filepath);
-
-        // Delete local file after upload
-        await fs.unlink(filepath);
-
-        // Return uploaded file URL
+        await fs.unlink(filepath); // delete after successful upload
         return uploadResult.url;
-    } 
-    catch (error) {
+    } catch (error) {
         console.error("Upload Error:", error.message);
+
+        try {
+            await fs.unlink(filepath); // attempt to delete even on failure
+        } catch (unlinkError) {
+            console.error("File deletion failed:", unlinkError.message);
+        }
+
         return null;
     }
 };

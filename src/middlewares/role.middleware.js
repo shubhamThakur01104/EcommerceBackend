@@ -6,8 +6,6 @@ const checkRole = (req, res, next) => {
         return res.status(401).json({ message: "Token not found or invalid format" });
     }
     const token = authHeader.split(" ")[2]
-    // console.log("token", token);
-
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (er, user) => {
@@ -17,8 +15,10 @@ const checkRole = (req, res, next) => {
             if (!user.isAdmin) {
                 return res.status(403).json({ message: "Unauthorized Access while verfiying Admin Access" });
             }
+            next();
         });
-        next();
+
+
     }
 
     catch (err) {
