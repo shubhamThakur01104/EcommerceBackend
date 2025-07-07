@@ -44,15 +44,15 @@ const addProducts = async (req, res) => {
         }
 
         /* --------- 2. Handle file upload safely --------- */
-        let uploadResult = [];
-        try {
-            if (Array.isArray(req.files) && req.files.length > 0) {
-                uploadResult = await fileUploader(req.files[0].path);           // ✅ only if file present
-            }
-        } catch (fileErr) {
-            console.error('File‑upload error:', fileErr);
-            return res.status(500).json({ message: 'Image upload failed.' });
-        }
+        // let uploadResult = [];
+        // try {
+        //     if (Array.isArray(req.files) && req.files.length > 0) {
+        //         uploadResult = await fileUploader(req.files[0].path);           // ✅ only if file present
+        //     }
+        // } catch (fileErr) {
+        //     console.error('File‑upload error:', fileErr);
+        //     return res.status(500).json({ message: 'Image upload failed.' });
+        // }
 
         /* --------- 3. Normalise & de‑dupe check --------- */
         const normalizedName = name.trim().toLowerCase();
@@ -87,7 +87,7 @@ const addProducts = async (req, res) => {
         colors: colorArr,
         sizes: sizeArr,
         isFeatured: !!isFeatured,
-        images: uploadResult,
+        // images: uploadResult,
     });
 
     return res.status(201).json({ message: 'Product added successfully.' });

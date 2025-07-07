@@ -17,7 +17,8 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true,
         trim: true,
-        defautl: 0
+        defautl: 0,
+        min: 0
     },
     brand: {
         type: String,
@@ -28,7 +29,7 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true,
         trim: true,
-        default: 0
+        default: 0,
     },
     images: [{
         type: String,
