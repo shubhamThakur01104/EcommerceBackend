@@ -1,45 +1,26 @@
-const Cart = require("../models/cart.model")
-const mongoose = require('mongoose')
-
-const getAllCartItems = async (req, res) => {
-
-};
-
+const Cart = require("../models/cart.model");
+const mongoose = require('mongoose');
 
 const addCartItems = async (req, res) => {
-    const userId = req.user.id
+    try {
+        
+        const userId = req.user.userId
+        const productId = req.body
 
-    const user = await Cart.create({userId})
+        const user = await Cart.find({userId})
+        
+        console.log(user);
+        
 
-    const cartWithUser = await Cart.aggregate([
-        {
-            $match:{
-                "userId" : new mongoose.Schema.Types.ObjectId(userId)
-            }
-        },
-        {
-            $lookup : {
-                from: "users",
-                localField: "userId",
-                foreignField: "_id",
-                as: "userInfo"
-            }
-        },
-    ])
 
-    console.log(cartWithUser);
-    
 
+    } catch (err) {
+        console.error("Add Cart Error:", err.message);
+        return res.status(500).json({ message: "Server error" });
+    }
 };
 
 
-
-const deleteCartItems = async (req, res) => {
-
-}
-
 module.exports = {
-    getAllCartItems,
-    addCartItems,
-    deleteCartItems
+    addCartItems
 }
