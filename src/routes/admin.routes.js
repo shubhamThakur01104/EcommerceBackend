@@ -12,6 +12,7 @@ router.route('/product').get(tokenVerification,
     getProducts)
 
     .post(upload.array('images', 5),
+        tokenVerification,
         addProducts)
 
 

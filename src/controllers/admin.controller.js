@@ -28,45 +28,37 @@ const addProducts = async (req, res) => {
     try {
         /* --------- 1. Pull & validate body --------- */
         const {
-            name = '',
-            description = '',
+            name,
+            description,
             price,
-            brand = '',
+            brand,
             stockAmount,
-            category = '',
-            colors = [],
-            sizes = [],
-            isFeatured = false,
+            category,
+            colors,
+            sizes,
         } = req.body;
+
 
         if (!name || !description || !price || !brand || !stockAmount || !category) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
         }
 
         /* --------- 2. Handle file upload safely --------- */
-        // let uploadResult = [];
-        // try {
-        //     if (Array.isArray(req.files) && req.files.length > 0) {
-        //         uploadResult = await fileUploader(req.files[0].path);           // ✅ only if file present
-        //     }
-        // } catch (fileErr) {
-        //     console.error('File‑upload error:', fileErr);
-        //     return res.status(500).json({ message: 'Image upload failed.' });
-        // }
+
+        const uploadPromises = req.files.map(file => fileUploader(file.path));
+
+        const uploadedImages = await Promise.all(uploadPromises);
+
 
         /* --------- 3. Normalise & de‑dupe check --------- */
         const normalizedName = name.trim().toLowerCase();
         const normalizedCategory = category.trim().toLowerCase();
 
-        // Make sure colors / sizes are always arrays
-        const colorArr = Array.isArray(colors) ? colors : [colors].filter(Boolean);
-        const sizeArr = Array.isArray(sizes) ? sizes : [sizes].filter(Boolean);
-
         const existing = await Product.findOne({
             name: normalizedName,
             category: normalizedCategory,
-            colors: colorArr.length ? { $all: colorArr } : undefined,
-            sizes: sizeArr.length ? { $all: sizeArr } : undefined,
+            colors: colors.length ? { $all: colors } : undefined,
+            sizes: sizes.length ? { $all: sizes } : undefined,
         });
 
         if (existing) {
@@ -76,26 +68,25 @@ const addProducts = async (req, res) => {
         /* --------- 4. Create product --------- */
         const sku = `PROD - ${uuidv4()}`;   // ← back‑ticks
 
-    await Product.create({
-        _id: sku,
-        name: normalizedName,
-        description: description.trim(),
-        price,
-        brand: brand.trim().toLowerCase(),
-        stockAmount,
-        category: normalizedCategory,
-        colors: colorArr,
-        sizes: sizeArr,
-        isFeatured: !!isFeatured,
-        // images: uploadResult,
-    });
+        await Product.create({
+            _id: sku,
+            name: normalizedName,
+            description: description.trim(),
+            price,
+            brand: brand.trim().toLowerCase(),
+            stockAmount,
+            category: normalizedCategory,
+            colors,
+            sizes,
+            images: uploadedImages,
+        });
 
-    return res.status(201).json({ message: 'Product added successfully.' });
+        return res.status(201).json({ message: 'Product added successfully.' });
 
-} catch (err) {
-    console.error('Add Product Error:', err);
-    return res.status(500).json({ message: 'Server error while adding product.' });
-}
+    } catch (err) {
+        console.error('Add Product Error:', err);
+        return res.status(500).json({ message: 'Server error while adding product.' });
+    }
 };
 
 /**

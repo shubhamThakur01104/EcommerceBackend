@@ -43,21 +43,17 @@ const productSchema = new mongoose.Schema({
         trim: true
     },
     colors: {
-        type: [String],
+        type: String,
         required: true,
-        default: [],
+        trim: true,
         enum: ['red', 'blue', 'black', 'white', 'green', 'yellow', 'gray'],
     },
 
     sizes: {
-        type: [String],
+        type: String,
         required: true,
-        default: [],
         enum: ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'],
-    },
-    isFeatured: {
-        type: Boolean,
-        default: false,
+        trim: true
     },
     rating: {
         type: mongoose.Schema.Types.ObjectId,
@@ -82,6 +78,8 @@ const productSchema = new mongoose.Schema({
         enum: ["temporary", "permanent", "all"]
     },
 
+}, {
+    timestamps: true
 })
 
 const Product = mongoose.model('Product', productSchema)
