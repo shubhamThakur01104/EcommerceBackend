@@ -1,26 +1,50 @@
 const { default: mongoose } = require('mongoose');
 const User = require('../models/order.model')
 
-const createOrder = async (req, res) => {
-  // Logic to create a new order
-  const userId = req.user.id
-  const { phoneNumber, street, city, state, postalCode, country, addressType, isDefault, paymentMethod, itemPrice, taxPrice, shippingPrice, totalPrice, isPaid, deliveryStatus, productId } = req.body
+// controllers/order.controller.js
 
-  const user = await Order.findOne({ userId })
-  if (!user) {
-    return res.status(404).json({ message: "User does not exist." });
+const Cart = require("../models/Cart");
+const Order = require("../models/Order");
+
+exports.placeOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Step 1: Find user's cart and populate product details
+    const cart = await Cart.findOne({ userId }).populate("items.productId");
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty." });
+    }
+
+    // Step 2: Calculate total
+    let totalAmount = 0;
+    cart.items.forEach((item) => {
+      const productPrice = item.productId.price; // assumes price exists
+      totalAmount += productPrice * item.quantity;
+    });
+
+    // Step 3: Create order
+    const order = await Order.create({
+      userId,
+      items: cart.items.map((item) => ({
+        productId: item.productId._id,
+        quantity: item.quantity,
+      })),
+      totalAmount,
+    });
+
+    // Step 4: Clear the cart
+    cart.items = [];
+    await cart.save();
+
+    return res.status(201).json({ message: "Order placed successfully.", order });
+
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
-
-  const product = await Order.findOne({userId}).populate('orderItems.productId')
-
-  if(!product){
-    return res.status(404).json({message: "Product does not exist."})
-  }
-
-
-
-
 };
+
 
 const getAllOrders = async (req, res) => {
   // Admin: Get all orders

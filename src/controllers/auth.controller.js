@@ -43,7 +43,7 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid email or password." });
         }
-        const token = userExist.generateJWT();
+        const token = userExist.generateJWT();        
 
         return res.status(200).json({
             message: "User login successful",
