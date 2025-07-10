@@ -43,18 +43,18 @@ const login = async (req, res) => {
 
         const userExist = await User.findOne({ email });
         if (!userExist) {
-            return res.status(404).json({ message: "Invalid email or password." });
+            return res.status(404).json({ message: "User is not found." });
         }
         const isPasswordValid = await userExist.verifyPassword(password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid email or password." });
         }
 
-
         const token = userExist.generateJWT();
 
         return res.status(200).json({
             message: "User login successful",
+            user: userExist,
             token,
         });
 
