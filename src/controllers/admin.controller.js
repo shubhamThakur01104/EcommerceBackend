@@ -75,7 +75,7 @@ const addProducts = async (req, res) => {
         /* --------- 4. Create product --------- */
         const sku = `${uuidv4()}`;   // ← back‑ticks
 
-        await Product.create({
+        const product = await Product.create({
             _id: sku,
             name: normalizedName,
             description: description.trim().toLowerCase(),
@@ -88,7 +88,7 @@ const addProducts = async (req, res) => {
             images: uploadedImages,
         });
 
-        return res.status(201).json({ message: 'Product added successfully.' });
+        return res.status(201).json({ message: 'Product added successfully.', product });
 
     } catch (err) {
         console.error('Add Product Error:', err);
