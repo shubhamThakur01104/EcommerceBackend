@@ -75,7 +75,7 @@ const productSchema = new mongoose.Schema({
     },
     productDelete: {
         type: String,
-        enum: ["temporary", "permanent", "all"]
+        enum: ["temporary", "permanent"]
     },
 
 }, {

@@ -125,7 +125,7 @@ const deleteProduct = async (req, res) => {
         const { id } = req.params;
         const { productDelete } = req.body;
 
-        if (!productDelete || !["temporary", "permanent", "all"].includes(productDelete)) {
+        if (!productDelete || !["temporary", "permanent"].includes(productDelete)) {
             return res.status(400).json({ message: "Invalid or missing 'productDelete' action." });
         }
 
