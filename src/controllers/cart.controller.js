@@ -9,6 +9,9 @@ exports.addToCart = async (req, res) => {
         const userId = req.user.id;
         const { productId, quantity = 1 } = req.body;
 
+        console.log("Welcome to add to cart page");
+        
+
         // 1. Check if the product exists
         const product = await Product.findById(productId);
         if (!product) {

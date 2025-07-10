@@ -43,14 +43,10 @@ const addProducts = async (req, res) => {
             return res.status(400).json({ message: 'All required fields must be filled.' });
         }
 
-        /* --------- 2. Handle file upload safely --------- */
-
-        const uploadPromises = req.files.map(file => fileUploader(file.path));
-
-        const uploadedImages = await Promise.all(uploadPromises);
 
 
-        /* --------- 3. Normalise & de‑dupe check --------- */
+
+        /* --------- 2. Normalise & de‑dupe check --------- */
         const normalizedName = name.trim().toLowerCase();
         const normalizedCategory = category.trim().toLowerCase();
 
@@ -65,19 +61,25 @@ const addProducts = async (req, res) => {
             return res.status(409).json({ message: 'Product already exists.' });
         }
 
+        /* --------- 3. Handle file upload safely --------- */
+
+        const uploadPromises = req.files.map(file => fileUploader(file.path));
+
+        const uploadedImages = await Promise.all(uploadPromises);
+
         /* --------- 4. Create product --------- */
-        const sku = `PROD - ${uuidv4()}`;   // ← back‑ticks
+        const sku = `${uuidv4()}`;   // ← back‑ticks
 
         await Product.create({
             _id: sku,
             name: normalizedName,
-            description: description.trim(),
+            description: description.trim().toLowerCase(),
             price,
             brand: brand.trim().toLowerCase(),
             stockAmount,
             category: normalizedCategory,
-            colors,
-            sizes,
+            colors: colors.toLowerCase(),
+            sizes: sizes.toUpperCase(),
             images: uploadedImages,
         });
 
@@ -96,9 +98,6 @@ const updateProduct = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid product ID format." });
-    }
 
     try {
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -158,9 +157,9 @@ const deleteProduct = async (req, res) => {
 const restoreProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid product ID format." });
-        }
+        // if (!mongoose.Types.ObjectId.isValid(id)) {
+        //     return res.status(400).json({ message: "Invalid product ID format." });
+        // }
 
         const product = await Product.findByIdAndUpdate(id, { isDeleted: false, updatedAt: new Date() }, { new: true });
 

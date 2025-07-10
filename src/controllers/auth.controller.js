@@ -2,7 +2,7 @@ const User = require('../models/user.model')
 
 const signUp = async (req, res) => {
     try {
-        const { name, email, password, isAdmin } = req.body;        
+        const { name, email, password, isAdmin = false } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -24,7 +24,6 @@ const signUp = async (req, res) => {
             },
             token,
         });
-
     } catch (err) {
 
         return res.status(400).json({ message: "Validation Error", errors: err.errors });
@@ -35,6 +34,13 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required."
+            });
+
+        }
+
         const userExist = await User.findOne({ email });
         if (!userExist) {
             return res.status(404).json({ message: "Invalid email or password." });
@@ -43,7 +49,9 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid email or password." });
         }
-        const token = userExist.generateJWT();        
+
+
+        const token = userExist.generateJWT();
 
         return res.status(200).json({
             message: "User login successful",

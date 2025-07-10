@@ -126,7 +126,7 @@ userSchema.methods.generateJWT = function () {
             isAdmin: this.isAdmin
         },
             process.env.JWT_SECRET, {
-            expiresIn: '30d'
+            expiresIn: process.env.JWT_EXPIERY
         })
         return token
 
