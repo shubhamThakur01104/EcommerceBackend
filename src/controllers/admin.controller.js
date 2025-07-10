@@ -1,7 +1,6 @@
 // controllers/product.controller.js
 
 const Product = require("../models/product.model");
-const { v4: uuidv4 } = require("uuid");
 const fileUploader = require("../utils/cloudinary");
 const mongoose = require("mongoose");
 
@@ -72,11 +71,8 @@ const addProducts = async (req, res) => {
 
         const uploadedImages = await Promise.all(uploadPromises);
 
-        /* --------- 4. Create product --------- */
-        const sku = `${uuidv4()}`;   // ← back‑ticks
 
         const product = await Product.create({
-            _id: sku,
             name: normalizedName,
             description: description.trim().toLowerCase(),
             price,

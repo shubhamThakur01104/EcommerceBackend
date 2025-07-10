@@ -7,105 +7,67 @@ const Product = require('../models/product.model')
 exports.addToCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId, quantity = 1 } = req.body;
+        const { productId, quantity = 1, totalPrice , increment , decrement } = req.body;
 
-        console.log("Welcome to add to cart page");
-        
-
-        // 1. Check if the product exists
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ message: "Product not found." });
-        }
-
-        const productPrice = product.price;
-
-        // 2. Check if user already has a cart
+        // 1. Check if the user already has a cart
         let cart = await Cart.findOne({ userId });
 
-        // 3. If no cart exists, create one
+
+        // 2. If no cart, create one with the product
         if (!cart) {
             cart = await Cart.create({
                 userId,
-                items: [{
-                    productId,
-                    quantity,
-                    totalPrice: productPrice * quantity,
-                }],
+                items: [{ productId, quantity, totalPrice }]
             });
-
             return res.status(201).json({
                 message: "Cart created and product added successfully.",
-                cart,
+                cart
             });
         }
 
-        // 4. Check if product already exists in the cart
+        // 3. If cart exists, check if product already in cart
         const existingProduct = cart.items.find(
-            (item) => item.productId.toString() === productId
+            item => item.productId.toString() === productId
         );
 
         if (existingProduct) {
-            // If it exists, increase quantity and update total price
             existingProduct.quantity += quantity;
-            existingProduct.totalPrice = productPrice * existingProduct.quantity;
+            await cart.save();
+            return res.status(200).json({
+                message: "Product quantity updated in cart.",
+                cart
+            });
         } else {
-            // If not, push new product
-            cart.items.push({
-                productId,
-                quantity,
-                totalPrice: productPrice * quantity,
+            cart.items.push({ productId, quantity });
+            await cart.save();
+            return res.status(200).json({
+                message: "Product added to cart.",
+                cart
             });
         }
 
-        // 5. Save the updated cart
-        await cart.save();
-
-        return res.status(200).json({
-            message: existingProduct
-                ? "Product quantity updated in cart."
-                : "Product added to cart successfully.",
-            cart,
-        });
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            message: "An error occurred while adding to cart.",
+            error: err.message
+        });
     }
 };
 
+
 exports.getCart = async (req, res) => {
     // Logic to get user's cart
-    try {
-        const userId = req.user.id
+    const userId = req.user.id
+    const { productId } = req.body
 
-        const { productId } = req.params
+    const user = await Product.findOne({ userId })
 
+    console.log(user);
 
-        const cart = await Cart.findOne({ userId }).populate({
-            path: "items",
-            populate: {
-                path: "productId"
-            }
-        })
-
-        if (!cart || cart.items.length === 0) {
-            return res.status(404).json({ message: "Cart is empty." });
-        }
-
-        if (productId) {
-            const product = cart.items.find((item) => item.productId.toString() === productId)
-
-            if (!product) {
-                return res.status(404).json({ message: "Product not found in cart." });
-            }
-            return res.status(200).json({ product })
-        }
-
-        return res.status(200).json({ cart })
-
+    if (!user || user.items.length === 0) {
+        return res.status(400).json({ message: "Cart is empty." })
     }
-    catch (err) {
-        return res.status(500).json({ message: err.message });
-    }
+
 
 };
 

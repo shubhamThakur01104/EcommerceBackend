@@ -51,8 +51,7 @@ const productSchema = new mongoose.Schema({
 
     sizes: {
         type: String,
-        required: true,
-        enum: ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'],
+        enum: ['S', 'M', 'L', 'XL', 'XXL', 'FREE SIZE'],
         trim: true
     },
     rating: {
@@ -62,12 +61,6 @@ const productSchema = new mongoose.Schema({
     numReviews: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Reviews'
-    },
-    _id: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
     },
     isDeleted: {
         type: Boolean,
