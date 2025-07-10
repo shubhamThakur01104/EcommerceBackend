@@ -65,6 +65,11 @@ const addProducts = async (req, res) => {
 
         const uploadPromises = req.files.map(file => fileUploader(file.path));
 
+        if (!uploadPromises || uploadPromises.length === 0) {
+            return res.status(400).json({ message: "No files were uploaded." });
+        }
+
+
         const uploadedImages = await Promise.all(uploadPromises);
 
         /* --------- 4. Create product --------- */
