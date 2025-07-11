@@ -7,8 +7,8 @@ const tokenVerification = require("../middlewares/auth.middleware");
 
 // Add routes here
 router.post("/add", tokenVerification, cartController.addToCart);
-router.get("/", cartController.getCart);
-router.put("/remove/:productId", cartController.removeFromCart);
+router.get("/getproducts", tokenVerification, cartController.getCart);
+router.put("/remove", tokenVerification, cartController.removeFromCart);
 router.put("/clear", cartController.clearCart);
 
 module.exports = router;

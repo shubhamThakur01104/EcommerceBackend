@@ -7,9 +7,7 @@ const upload = require('../middlewares/multer.middleware')
 
 const router = express.Router()
 
-router.route('/product').get(tokenVerification,
-    checkRole,
-    getProducts)
+router.route('/product').get(getProducts)
 
     .post(upload.array('images', 5),
         tokenVerification,

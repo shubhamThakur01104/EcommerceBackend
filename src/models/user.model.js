@@ -26,15 +26,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    contactNo: {
-        type: String,
-        trim: true,
-    },
     Address: [{
-        phoneNumber: {
+        contactNo: {
             type: String,
-            required: true,
-            trim: true
+            trim: true,
         },
         street: {
             type: String,
