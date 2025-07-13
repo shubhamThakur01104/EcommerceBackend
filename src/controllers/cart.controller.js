@@ -1,4 +1,5 @@
 const Cart = require("../models/cart.model");
+const User = require("../models/user.model")
 
 exports.addToCart = async (req, res) => {
     try {
@@ -12,7 +13,10 @@ exports.addToCart = async (req, res) => {
             });
         }
 
-        let cart = await Cart.findOne({ userId });
+        let user = await User.findById(userId).populate("cart")
+
+        let cart = user.cart
+
 
         // If no cart exists, create one
         if (!cart) {
@@ -20,12 +24,13 @@ exports.addToCart = async (req, res) => {
                 userId,
                 items: [{ productId, quantity, totalPrice }]
             });
-
+            await User.findByIdAndUpdate(userId, { cart: cart._id }, { new: true });
             return res.status(201).json({
                 message: "Cart created and product added successfully.",
                 cart
             });
         }
+
 
         // If cart exists, check if the product already exists
         const existingItem = cart.items.find(
@@ -45,7 +50,7 @@ exports.addToCart = async (req, res) => {
             message: existingItem
                 ? "Product quantity updated in cart."
                 : "Product added to cart.",
-            cart
+            cart,
         });
 
     } catch (err) {
@@ -79,7 +84,7 @@ exports.getCart = async (req, res) => {
             message: "Cart data fetched successfully.",
             cartItems,
             totalQuantity,
-            totalPrice
+            totalPrice,
         });
 
     } catch (err) {

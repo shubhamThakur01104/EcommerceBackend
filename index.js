@@ -5,6 +5,7 @@ const userRoute = require('./src/routes/auth.routes')
 const apiRoute = require('./src/routes/product.routes')
 const productRoute = require('./src/routes/admin.routes')
 const cartRoute = require('./src/routes/cart.routes')
+const orderRoute = require('./src/routes/order.routes')
 const cors = require('cors')
 
 const app = express()
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({origin: "http://localhost:3000"}))
+app.use(cors({ origin: "http://localhost:3000" }))
 
 const startServer = async () => {
     try {
@@ -26,6 +27,7 @@ const startServer = async () => {
         app.use('/api', apiRoute)
         app.use('/admin', productRoute)
         app.use('/cart', cartRoute)
+        app.use('/order', orderRoute);
 
         app.listen(PORT, () => {
             console.log(`Server is successfully running on PORT : ${PORT}`);

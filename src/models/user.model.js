@@ -26,46 +26,17 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    Address: [{
-        contactNo: {
-            type: String,
-            trim: true,
-        },
-        street: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        city: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        state: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        postalCode: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        country: {
-            type: String,
-            required: true,
-            trim: true,
-            default: 'India'
-        },
-        addressType: {
-            type: String,
-            enum: ['Home', 'Office', 'Other'],
-            default: 'Home'
-        },
-        isDefault: {
-            type: Boolean,
-            default: false
-        },
+    address: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address"
+    }],
+    cart: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Cart'
+    },
+    orderHistory : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order"
     }],
     isVerified: {
         type: Boolean,

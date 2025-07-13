@@ -13,8 +13,8 @@ const tokenVerification = (req, res, next) => {
                 return res.status(401).json({ message: "Invalid or expired token" });
             }
 
-            req.user = user; // <-- Store for downstream use
-            next(); // <-- Must be inside this callback!
+            req.user = user; 
+            next();
         });
 
     } catch (err) {

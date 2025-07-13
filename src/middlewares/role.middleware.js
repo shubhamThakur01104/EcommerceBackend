@@ -9,6 +9,7 @@ const checkRole = (req, res, next) => {
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (er, user) => {
+            
             if (er) {
                 return { status: 404, message: er.message }
             }
