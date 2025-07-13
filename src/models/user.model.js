@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Cart'
     },
-    orderHistory : [{
+    orderHistory: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Order"
     }],
@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema({
     image: {
         type: String,
     },
+    reviews: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
 }, {
     timestamps: true
 })

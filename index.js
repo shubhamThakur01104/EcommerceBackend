@@ -3,9 +3,10 @@ const dotenv = require('dotenv')
 const dbConnection = require('./src/config/dbConnection')
 const userRoute = require('./src/routes/auth.routes')
 const apiRoute = require('./src/routes/product.routes')
-const productRoute = require('./src/routes/admin.routes')
+const adminRoute = require('./src/routes/admin.routes')
 const cartRoute = require('./src/routes/cart.routes')
 const orderRoute = require('./src/routes/order.routes')
+const productRoute = require('./src/routes/product.routes')
 const cors = require('cors')
 
 const app = express()
@@ -22,10 +23,10 @@ app.use(cors({ origin: "http://localhost:3000" }))
 const startServer = async () => {
     try {
         await dbConnection()
-
+        app.use('/product', productRoute)
         app.use('/user', userRoute)
         app.use('/api', apiRoute)
-        app.use('/admin', productRoute)
+        app.use('/admin', adminRoute)
         app.use('/cart', cartRoute)
         app.use('/order', orderRoute);
 

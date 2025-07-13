@@ -2,6 +2,7 @@
 
 const Product = require("../models/product.model");
 const fileUploader = require("../utils/cloudinary");
+const User = require('../models/user.model')
 const mongoose = require("mongoose");
 
 /**
@@ -175,10 +176,74 @@ const restoreProduct = async (req, res) => {
     }
 };
 
+
+const deleteProductsByCategory = async (req, res) => {
+    try {
+        const { category } = req.body;
+
+        const allowedCategories = ['clothing', 'shoes', 'books', 'furniture'];
+
+        if (!category) {
+            return res.status(400).json({ message: "Category is required in request body." });
+        }
+
+        if (!allowedCategories.includes(category.toLowerCase())) {
+            return res.status(400).json({
+                message: `Invalid category. Allowed categories are: ${allowedCategories.join(', ')}`,
+            });
+        }
+
+        const result = await Product.deleteMany({ category });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "No products found under this category." });
+        }
+
+        return res.status(200).json({
+            message: `Successfully deleted ${result.deletedCount} product(s) under the '${category}' category.`,
+        });
+
+    } catch (err) {
+        console.error("Error deleting products by category:", err);
+        return res.status(500).json({
+            message: "An internal server error occurred while deleting products.",
+            error: err.message
+        });
+    }
+};
+
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find()
+            .populate({ path: "address" })
+            .select("name email createdAt images");
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({ message: "No users found." });
+        }
+
+        return res.status(200).json({
+            message: "Users fetched successfully.",
+            totalUsers: users.length,
+            users,
+        });
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return res.status(500).json({
+            message: "An error occurred while fetching users.",
+            error: error.message,
+        });
+    }
+};
+
+
 module.exports = {
     getProducts,
     addProducts,
     updateProduct,
     deleteProduct,
-    restoreProduct
+    restoreProduct,
+    deleteProductsByCategory,
+    getAllUsers
 };

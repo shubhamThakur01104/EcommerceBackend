@@ -1,7 +1,7 @@
 const Cart = require("../models/cart.model");
 const User = require("../models/user.model")
 
-exports.addToCart = async (req, res) => {
+const addToCart = async (req, res) => {
     try {
         const userId = req.user.id;
         const { productId, quantity, totalPrice } = req.body;
@@ -63,7 +63,7 @@ exports.addToCart = async (req, res) => {
 };
 
 
-exports.getCart = async (req, res) => {
+const getCart = async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -97,7 +97,7 @@ exports.getCart = async (req, res) => {
 };
 
 
-exports.removeFromCart = async (req, res) => {
+const removeFromCart = async (req, res) => {
     try {
         const userId = req.user.id;
         const { productId } = req.body;
@@ -106,11 +106,21 @@ exports.removeFromCart = async (req, res) => {
             return res.status(400).json({ message: "Product ID is required." });
         }
 
-        const cart = await Cart.findOneAndUpdate(
-            { userId },
+        const cart = await Cart.findByIdAndUpdate(
+            userId,
             { $pull: { items: { productId } } },
             { new: true }
         );
+
+        await User.findByIdAndUpdate(
+            userId,
+            {
+                $pull: { cart: cart._id }
+            },
+            {
+                new: true
+            }
+        )
 
         if (!cart) {
             return res.status(404).json({ message: "Cart not found." });
@@ -136,7 +146,7 @@ exports.removeFromCart = async (req, res) => {
 };
 
 
-exports.clearCart = async (req, res) => {
+const clearCart = async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -158,3 +168,10 @@ exports.clearCart = async (req, res) => {
         });
     }
 };
+
+module.exports = {
+    getCart,
+    removeFromCart,
+    addToCart,
+    clearCart
+}

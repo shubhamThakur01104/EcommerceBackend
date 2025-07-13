@@ -1,5 +1,5 @@
 const express = require('express')
-const { addProducts, updateProduct, deleteProduct, getProducts, restoreProduct } = require('../controllers/admin.controller')
+const { addProducts, updateProduct, deleteProduct, getProducts, restoreProduct, deleteProductsByCategory, getAllUsers } = require('../controllers/admin.controller')
 const tokenVerification = require('../middlewares/auth.middleware')
 const checkRole = require('../middlewares/role.middleware')
 const upload = require('../middlewares/multer.middleware')
@@ -16,15 +16,19 @@ router.route('/product').get(getProducts)
 
 
 router.route('/product/:id')
-    .put(tokenVerification,
+    .patch(tokenVerification,
         checkRole,
         updateProduct)
 
     .delete(checkRole, tokenVerification, deleteProduct)
 
-router.route('/product/restore/:id').put(checkRole, tokenVerification,
+router.route('/delete/category').delete(checkRole, tokenVerification, deleteProductsByCategory)
+
+
+router.route('/product/restore/:id').patch(checkRole, tokenVerification,
     restoreProduct
 )
 
+router.route('/allusers').get(tokenVerification, checkRole, getAllUsers)
 
 module.exports = router

@@ -69,7 +69,43 @@ const login = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        console.log(req.user);
+
+        const userId = req.user.id;
+        const data = req.body;
+        
+
+        // Check if there's any data to update
+        if (!data || Object.keys(data).length === 0) {
+            return res.status(400).json({ message: "No data provided to update." });
+        }
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            data,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        return res.status(200).json({
+            message: "Profile updated successfully.",
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error("Update profile error:", error);
+        return res.status(500).json({
+            message: "An error occurred while updating the profile.",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     signUp,
-    login
+    login,
+    updateProfile
 }

@@ -18,38 +18,31 @@ const checkRole = require('../middlewares/role.middleware');
 // ==================== USER ROUTES ====================
 
 // Create a new order
-router.route('/user/')
-  .post(tokenVerification, createOrder);
+router.post('/user', tokenVerification, createOrder);
 
 // Get all orders of the logged-in user
-router.route('/user/my-orders')
-  .get(tokenVerification, getOrdersByUserId);
+router.get('/user/my-orders', tokenVerification, getOrdersByUserId);
 
-// Get a specific order by ID (only for owner)
-router.route('/user/:id')
-  .get(tokenVerification, getOrderById);
 
-// Add review for a specific order
-router.route('/user/:id/review')
-  .post(tokenVerification, addOrderReview);
+
+// ==================== SHARED ROUTES (Admin + Order Owner) ====================
+
+// Get a specific order by ID (admin or user who placed the order)
+router.get('/getorder/:id', tokenVerification, getOrderById);
+
+// Cancel/delete an order (admin or user who placed it)
+router.delete('/cancel/:id', tokenVerification, deleteOrder);
 
 
 // ==================== ADMIN ROUTES ====================
 
 // Get all orders (Admin only)
-router.route('/admin/all')
-  .get(tokenVerification, checkRole, getAllOrders);
+router.get('/admin/all-orders', tokenVerification, checkRole, getAllOrders);
 
 // Update order status (Admin only)
-router.route('/admin/:id/status')
-  .patch(tokenVerification, checkRole, updateOrderStatus);
-
-// Delete an order (Admin only)
-router.route('/admin/:id')
-  .delete(tokenVerification, checkRole, deleteOrder);
+router.patch('/admin/:id/status', tokenVerification, checkRole, updateOrderStatus);
 
 // Get order statistics (Admin only)
-router.route('/admin/stats/data')
-  .get(tokenVerification, checkRole, getOrderStats);
+router.get('/admin/stats', tokenVerification, checkRole, getOrderStats);
 
 module.exports = router;

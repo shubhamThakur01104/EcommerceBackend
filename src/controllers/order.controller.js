@@ -124,12 +124,8 @@ const createOrder = async (req, res) => {
 };
 
 
-
 const getAllOrders = async (req, res) => {
-  // Admin: Get all orders
   try {
-    const userId = req.user.id
-
     const orders = await Order.find()
       .populate([
         {
@@ -141,43 +137,191 @@ const getAllOrders = async (req, res) => {
           select: "streetNo city state postalCode country"
         },
         {
-          path: "items.productId", // nested population
-          select: "name price quantity"
+          path: "items.productId",
+          select: "name price images"
         }
       ])
       .select("status isPaid totalAmount quantity paymentMethod createdAt");
 
-    console.log(orders);
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        message: "No orders found."
+      });
+    }
 
-  }
-  catch (err) {
-    return res.status(400).json({ message: "" })
+    return res.status(200).json({
+      message: "All orders fetched successfully.",
+      count: orders.length,
+      orders
+    });
+
+  } catch (err) {
+    console.error("Error fetching orders:", err.message);
+    return res.status(500).json({
+      message: "An error occurred while fetching orders.",
+      error: err.message
+    });
   }
 };
+
 
 const getOrderById = async (req, res) => {
-  // Get a single order by ID
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id)
+      .populate({
+        path: "items.productId",
+        select: "name images colors sizes price"
+      })
+      .select("items.quantity items.totalPrice totalAmount quantity paymentMethod status isPaid userId createdAt");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    // Authorization check
+    if (
+      order.userId.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        message: "Forbidden: You are not allowed to access this order."
+      });
+    }
+
+    return res.status(200).json({
+      message: "Order retrieved successfully.",
+      order
+    });
+
+  } catch (err) {
+    console.error("getOrderById error:", err);
+    return res.status(500).json({
+      message: "An error occurred while retrieving the order.",
+      error: err.message
+    });
+  }
 };
+
 
 const getOrdersByUserId = async (req, res) => {
-  // Get all orders placed by a specific user
+  try {
+    const userId = req.user.id;
+
+    const orders = await Order.find({ userId })
+      .populate({
+        path: "items.productId",
+        select: "name price colors sizes images"
+      })
+      .select("items totalAmount quantity paymentMethod status isPaid createdAt");
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        message: "No orders found for this user.",
+        orders: []
+      });
+    }
+
+    return res.status(200).json({
+      message: "Orders fetched successfully.",
+      count: orders.length,
+      orders
+    });
+
+  } catch (err) {
+    console.error("Get user orders error:", err);
+    return res.status(500).json({
+      message: "An error occurred while fetching user orders.",
+      error: err.message
+    });
+  }
 };
+
 
 const updateOrderStatus = async (req, res) => {
-  // Admin: Update order delivery/payment status
-};
+  try {
+    const { id } = req.params
+    const orderId = id
+    const { status } = req.body;
+    // Check for missing fields
+    if (!status || !orderId) {
+      return res.status(400).json({ message: "Status and orderId are required." });
+    }
+
+    // Valid status values
+    const validStatuses = ["pending", "confirmed", "shipped", "delivered", "canceled", "returned"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: `Invalid status. Allowed values are: ${validStatuses.join(", ")}` });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    return res.status(200).json({
+      message: "Order status updated successfully.",
+      updatedStatus: order.status,
+      orderId: order._id
+    });
+
+  } catch (err) {
+    console.error("Error updating order status:", err);
+    return res.status(500).json({
+      message: "An error occurred while updating the order status.",
+      error: err.message
+    });
+  }
+}
 
 const deleteOrder = async (req, res) => {
-  // Admin: Delete/cancel order
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    // Check if user is either the admin or the one who placed the order
+    if (order.userId.toString() !== userId && userRole !== "admin") {
+      return res.status(403).json({
+        message: "Forbidden: You are not allowed to cancel this order."
+      });
+    }
+
+    // Update order status to "canceled"
+    order.status = "canceled";
+    await order.save();
+
+    return res.status(200).json({
+      message: "Order canceled successfully.",
+      order
+    });
+
+  } catch (err) {
+    console.error("Cancel order error:", err);
+    return res.status(500).json({
+      message: "An error occurred while canceling the order.",
+      error: err.message
+    });
+  }
 };
+
 
 const getOrderStats = async (req, res) => {
   // Admin: Order analytics/stats
 };
 
-const addOrderReview = async (req, res) => {
-  // User: Review an order or products in the order
-};
 
 module.exports = {
   createOrder,
@@ -187,5 +331,4 @@ module.exports = {
   updateOrderStatus,
   deleteOrder,
   getOrderStats,
-  addOrderReview
 };
