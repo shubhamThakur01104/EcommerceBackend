@@ -67,19 +67,16 @@ const getCart = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const user = await Cart.find({ userId }).populate({
+        const cart = await Cart.findOne({ userId }).populate({
             path: "items.productId",
             select: ["name", "price", "images"]
         });
 
-        console.log(user);
-
-
-        if (!user || user.items.length === 0) {
+        if (!cart || cart.items.length === 0) {
             return res.status(404).json({ message: "Cart is empty." });
         }
 
-        const cartItems = user.items;
+        const cartItems = cart.items;
         const totalQuantity = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
         const totalPrice = cartItems.reduce((acc, curr) => acc + curr.totalPrice, 0);
 
@@ -89,6 +86,7 @@ const getCart = async (req, res) => {
             totalQuantity,
             totalPrice,
         });
+
 
     } catch (err) {
         console.error("Get cart error:", err);
