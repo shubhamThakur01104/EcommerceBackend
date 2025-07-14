@@ -67,10 +67,13 @@ const getCart = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const user = await Cart.findOne({ userId }).populate({
+        const user = await Cart.find({ userId }).populate({
             path: "items.productId",
             select: ["name", "price", "images"]
         });
+
+        console.log(user);
+
 
         if (!user || user.items.length === 0) {
             return res.status(404).json({ message: "Cart is empty." });

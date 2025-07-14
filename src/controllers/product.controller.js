@@ -4,8 +4,11 @@ const User = require('../models/user.model')
 
 const getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().select(
-            "name description price colors sizes images category brand"
+        const products = await Product.find().populate([{
+            path: "reviews",
+            select: "rating comment"
+        }]).select(
+            "name description price colors sizes images category brand rating reviews"
         );
 
         if (!products || products.length === 0) {
@@ -32,7 +35,10 @@ const getProductsById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const product = await Product.findById(id).select(
+        const product = await Product.findById(id).populate([{
+            path: "reviews",
+            select: "rating comment"
+        }]).select(
             "name description price colors sizes images category brand"
         );
 
@@ -175,50 +181,45 @@ const editReview = async (req, res) => {
 };
 
 const deleteReview = async (req, res) => {
-  try {
-    const { reviewid } = req.params;
+    try {
+        const { reviewid } = req.params;
 
-    // Validate ID
-    if (!reviewid) {
-      return res.status(400).json({ message: "Invalid review ID." });
-    }
-
-    const review = await Review.findByIdAndDelete(reviewid);
-
-    if (!review) {
-      return res.status(404).json({ message: "Review not found or already deleted." });
-    }
-
-    await User.findByIdAndUpdate(
-        req.user.id,
-        {
-            $pull: {reviews: review._id}
-        },
-        {
-            new: true
+        // Validate ID
+        if (!reviewid) {
+            return res.status(400).json({ message: "Invalid review ID." });
         }
-    )
 
-    return res.status(200).json({ message: "Review deleted successfully." });
+        const review = await Review.findByIdAndDelete(reviewid);
 
-  } catch (err) {
-    console.error("Delete review error:", err);
-    return res.status(500).json({
-      message: "Internal server error.",
-      error: err.message,
-    });
-  }
+        if (!review) {
+            return res.status(404).json({ message: "Review not found or already deleted." });
+        }
+
+        await User.findByIdAndUpdate(
+            req.user.id,
+            {
+                $pull: { reviews: review._id }
+            },
+            {
+                new: true
+            }
+        )
+
+        return res.status(200).json({ message: "Review deleted successfully." });
+
+    } catch (err) {
+        console.error("Delete review error:", err);
+        return res.status(500).json({
+            message: "Internal server error.",
+            error: err.message,
+        });
+    }
 };
 
-
-const searchProduct = () => {
-
-}
 
 module.exports = {
     getAllProducts,
     getProductsById,
-    searchProduct,
     addProductReview,
     getProductReviews,
     editReview,

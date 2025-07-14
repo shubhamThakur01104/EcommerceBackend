@@ -1,4 +1,5 @@
 const User = require('../models/user.model')
+const tokenBlacklist = require('../utils/tokenblacklist');
 
 const signUp = async (req, res) => {
     try {
@@ -75,7 +76,7 @@ const updateProfile = async (req, res) => {
 
         const userId = req.user.id;
         const data = req.body;
-        
+
 
         // Check if there's any data to update
         if (!data || Object.keys(data).length === 0) {
@@ -104,8 +105,28 @@ const updateProfile = async (req, res) => {
     }
 };
 
+
+const logout = (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: "Authorization token missing" });
+        }
+
+        const token = authHeader.split(' ')[2];
+        tokenBlacklist.add(token);
+
+        return res.status(200).json({ message: "Logged out successfully" });
+    } catch (err) {
+        console.error("Logout error:", err.message);
+        return res.status(500).json({ message: "Server error during logout" });
+    }
+};
+
+
 module.exports = {
     signUp,
     login,
-    updateProfile
+    updateProfile,
+    logout
 }

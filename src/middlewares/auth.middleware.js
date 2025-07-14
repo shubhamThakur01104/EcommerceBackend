@@ -13,7 +13,7 @@ const tokenVerification = (req, res, next) => {
                 return res.status(401).json({ message: "Invalid or expired token" });
             }
 
-            req.user = user; 
+            req.user = user;
             next();
         });
 
@@ -22,5 +22,6 @@ const tokenVerification = (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized Access" });
     }
 };
+
 
 module.exports = tokenVerification;

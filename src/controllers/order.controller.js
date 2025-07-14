@@ -1,7 +1,8 @@
 const Order = require("../models/order.model");
 const User = require('../models/user.model')
 const Address = require("../models/address.model")
-const Product = require("../models/order.model")
+const Product = require("../models/product.model")
+const Cart = require("../models/cart.model")
 
 const createOrder = async (req, res) => {
   try {
@@ -97,18 +98,39 @@ const createOrder = async (req, res) => {
     });
 
     if (order) {
-      await Product.findByIdAndUpdate(
-
-      )
+      for (const product of productItems) {
+        const id = product.productId.toString();
+        await Product.findByIdAndUpdate(id,
+          {
+            $inc: { stockAmount: -product.quantity }
+          },
+          {
+            new: true
+          }
+        );
+      }
     }
+
+
 
     // 5. Update user's order history
     await User.findByIdAndUpdate(
       userId,
       { $push: { orderHistory: order._id } },
-      { cart: null },
       { new: true }
     );
+
+
+    await Cart.findOneAndUpdate(
+      { userId: req.user.id },
+      {
+        $set: { items: [] }
+      },
+      {
+        new: true
+      }
+    );
+
 
     return res.status(201).json({
       message: "Order placed successfully.",
@@ -282,46 +304,34 @@ const updateOrderStatus = async (req, res) => {
 
 const deleteOrder = async (req, res) => {
   try {
-    const { id } = req.params;
-    const userId = req.user.id;
-    const userRole = req.user.role;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $set: { orderHistory: [] }
+      },
+      { new: true }
+    );
 
-    const order = await Order.findById(id);
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found." });
-    }
-
-    // Check if user is either the admin or the one who placed the order
-    if (order.userId.toString() !== userId && userRole !== "admin") {
-      return res.status(403).json({
-        message: "Forbidden: You are not allowed to cancel this order."
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found."
       });
     }
 
-    // Update order status to "canceled"
-    order.status = "canceled";
-    await order.save();
 
     return res.status(200).json({
-      message: "Order canceled successfully.",
-      order
+      message: "Order history cleared and related orders deleted successfully.",
+      user: updatedUser
     });
 
   } catch (err) {
-    console.error("Cancel order error:", err);
+    console.error("Delete order history error:", err);
     return res.status(500).json({
-      message: "An error occurred while canceling the order.",
+      message: "An error occurred while deleting the order history.",
       error: err.message
     });
   }
 };
-
-
-const getOrderStats = async (req, res) => {
-  // Admin: Order analytics/stats
-};
-
 
 module.exports = {
   createOrder,
@@ -330,5 +340,4 @@ module.exports = {
   getOrdersByUserId,
   updateOrderStatus,
   deleteOrder,
-  getOrderStats,
 };

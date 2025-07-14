@@ -3,6 +3,7 @@ const { addProducts, updateProduct, deleteProduct, getProducts, restoreProduct, 
 const tokenVerification = require('../middlewares/auth.middleware')
 const checkRole = require('../middlewares/role.middleware')
 const upload = require('../middlewares/multer.middleware')
+const isTokenBlacklisted = require('../middlewares/logout.middleware')
 
 
 const router = express.Router()
@@ -17,18 +18,19 @@ router.route('/product').get(getProducts)
 
 router.route('/product/:id')
     .patch(tokenVerification,
+        isTokenBlacklisted,
         checkRole,
         updateProduct)
 
-    .delete(checkRole, tokenVerification, deleteProduct)
+    .delete(checkRole, isTokenBlacklisted, tokenVerification, deleteProduct)
 
-router.route('/delete/category').delete(checkRole, tokenVerification, deleteProductsByCategory)
+router.route('/delete/category').delete(checkRole, isTokenBlacklisted, tokenVerification, deleteProductsByCategory)
 
 
-router.route('/product/restore/:id').patch(checkRole, tokenVerification,
+router.route('/product/restore/:id').patch(checkRole,isTokenBlacklisted, tokenVerification,
     restoreProduct
 )
 
-router.route('/allusers').get(tokenVerification, checkRole, getAllUsers)
+router.route('/allusers').get(tokenVerification,isTokenBlacklisted, checkRole, getAllUsers)
 
 module.exports = router

@@ -54,13 +54,9 @@ const productSchema = new mongoose.Schema({
         enum: ['S', 'M', 'L', 'XL', 'XXL', 'FREE SIZE'],
         trim: true
     },
-    rating: {
+    reviews: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Rating'
-    },
-    numReviews: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Reviews'
+        ref: 'Review'
     },
     isDeleted: {
         type: Boolean,
