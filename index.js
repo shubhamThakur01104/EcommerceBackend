@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({ origin: "http://localhost:3000" }))
+app.use(cors({ origin: ["https://ecommerce-frontend-228h.vercel.app/","https://ecommerce-frontend-228h.vercel.app"] }))
 
 const startServer = async () => {
     try {
