@@ -1,5 +1,6 @@
 const User = require('../models/user.model')
 const tokenBlacklist = require('../utils/tokenblacklist');
+const jwt = require('jsonwebtoken');
 
 const signUp = async (req, res) => {
     try {
@@ -13,7 +14,11 @@ const signUp = async (req, res) => {
 
         const user = await User.create({ name, email, password, isAdmin });
 
-        const token = user.generateJWT();
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+        user.accessToken = accessToken;
+        user.refreshToken = refreshToken;
+        await user.save();
 
         return res.status(201).json({
             message: "User created successfully",
@@ -23,7 +28,8 @@ const signUp = async (req, res) => {
                 email: user.email,
                 isAdmin: user.isAdmin
             },
-            token,
+            accessToken,
+            refreshToken,
         });
     } catch (err) {
 
@@ -51,12 +57,22 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password." });
         }
 
-        const token = userExist.generateJWT();
+        const accessToken = userExist.generateAccessToken();
+        const refreshToken = userExist.generateRefreshToken();
+        userExist.accessToken = accessToken;
+        userExist.refreshToken = refreshToken;
+        await userExist.save();
 
         return res.status(200).json({
             message: "User login successful",
-            user: userExist,
-            token,
+            user: {
+                id: userExist._id,
+                name: userExist.name,
+                email: userExist.email,
+                isAdmin: userExist.isAdmin
+            },
+            accessToken,
+            refreshToken,
         });
 
     } catch (err) {
@@ -106,6 +122,46 @@ const updateProfile = async (req, res) => {
 };
 
 
+const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(400).json({ message: "Refresh token is required" });
+        }
+
+        // verify refresh token
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ message: "Invalid or expired refresh token" });
+            }
+
+            const user = await User.findById(decoded.id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (!user.refreshToken || user.refreshToken !== refreshToken) {
+                return res.status(401).json({ message: "Refresh token does not match or is revoked" });
+            }
+
+            const newAccessToken = user.generateAccessToken();
+            const newRefreshToken = user.generateRefreshToken();
+            user.accessToken = newAccessToken;
+            user.refreshToken = newRefreshToken;
+            await user.save();
+
+            return res.status(200).json({
+                message: "Tokens refreshed successfully",
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken
+            });
+        });
+    } catch (err) {
+        console.error("Refresh token error:", err.message);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
 const logout = (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -113,7 +169,7 @@ const logout = (req, res) => {
             return res.status(401).json({ message: "Authorization token missing" });
         }
 
-        const token = authHeader.split(' ')[2];
+        const token = authHeader.split(' ')[1];
         tokenBlacklist.add(token);
 
         return res.status(200).json({ message: "Logged out successfully" });
@@ -128,5 +184,6 @@ module.exports = {
     signUp,
     login,
     updateProfile,
+    refreshToken,
     logout
 }

@@ -6,7 +6,7 @@ const isTokenBlacklisted = (req, res, next) => {
         return res.status(401).json({ message: "Authorization token missing" });
     }
 
-    const token = authHeader.split(' ')[2];
+    const token = authHeader.split(' ')[1];
     if (tokenBlacklist.has(token)) {
         return res.status(401).json({ message: "Token has been blacklisted (expired)" });
     }

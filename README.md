@@ -59,6 +59,11 @@ The app mounts routes as:
 | `/user/login` | POST | No | `{ email, password }` | `200` success; `400` invalid request; `404` user not found; `401` invalid credentials |
 | `/user/updateprofile` | PATCH | Yes (Bearer token) | partial fields to update | `200` updated; `400` no data; `404` not found |
 | `/user/logout` | PATCH | Yes | header `Authorization: Bearer <token>` | `200` logged out; `401` missing token |
+| `/user/refresh-token` | POST | No | `{ refreshToken }` | `200` returns new accessToken + refreshToken; `400` required; `401` invalid/expired |
+
+#### Access/Refresh token flow
+- `accessToken` expires quickly (e.g. 15m). Use it for protected requests.
+- `refreshToken` lasts longer (e.g. 7d). Use `/user/refresh-token` to get new tokens when access token expires.
 
 ### 2) Public Product + Review Routes (`/product`)
 

@@ -66,6 +66,14 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
     }],
+    accessToken: {
+        type: String,
+        default: null,
+    },
+    refreshToken: {
+        type: String,
+        default: null,
+    },
 }, {
     timestamps: true
 })
@@ -88,23 +96,37 @@ userSchema.methods.verifyPassword = async function (password) {
     return await bcryptjs.compare(password, this.password)
 }
 
-userSchema.methods.generateJWT = function () {
+userSchema.methods.generateAccessToken = function () {
     try {
-        const token = jwt.sign({
+        return jwt.sign({
             id: this._id,
             email: this.email,
             isAdmin: this.isAdmin
-        },
-            process.env.JWT_SECRET, {
-            expiresIn: '7d'
+        }, process.env.JWT_SECRET, {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '15m'
         })
-        return token
-
-    }
-    catch (err) {
-        console.error(`Error while generating JWT Token`, err.message);
+    } catch (err) {
+        console.error(`Error while generating Access Token`, err.message);
         return null
     }
+}
+
+userSchema.methods.generateRefreshToken = function () {
+    try {
+        return jwt.sign({
+            id: this._id,
+            email: this.email
+        }, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d'
+        })
+    } catch (err) {
+        console.error(`Error while generating Refresh Token`, err.message);
+        return null
+    }
+}
+
+userSchema.methods.generateJWT = function () {
+    return this.generateAccessToken();
 }
 
 userSchema.methods.generateEmailToken = async function () {
