@@ -8,6 +8,7 @@ const cartRoute = require('./src/routes/cart.routes')
 const orderRoute = require('./src/routes/order.routes')
 const productRoute = require('./src/routes/product.routes')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
 
 const app = express()
 dotenv.config()
@@ -18,7 +19,8 @@ const PORT = process.env.PORT || 5000
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({ origin: ["https://ecommerce-frontend-228h.vercel.app/","https://ecommerce-frontend-228h.vercel.app"] }))
+app.use(cookieParser())
+app.use(cors({ origin: ["https://ecommerce-frontend-228h.vercel.app/","https://ecommerce-frontend-228h.vercel.app"], credentials: true }))
 
 const startServer = async () => {
     try {

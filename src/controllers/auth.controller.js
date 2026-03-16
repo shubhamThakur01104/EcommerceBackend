@@ -2,6 +2,12 @@ const User = require('../models/user.model')
 const tokenBlacklist = require('../utils/tokenblacklist');
 const jwt = require('jsonwebtoken');
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+};
+
 const signUp = async (req, res) => {
     try {
         const { name, email, password, isAdmin = false } = req.body;
@@ -19,6 +25,15 @@ const signUp = async (req, res) => {
         user.accessToken = accessToken;
         user.refreshToken = refreshToken;
         await user.save();
+
+        res.cookie('accessToken', accessToken, {
+            ...cookieOptions,
+            maxAge: 15 * 60 * 1000
+        });
+        res.cookie('refreshToken', refreshToken, {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         return res.status(201).json({
             message: "User created successfully",
@@ -62,6 +77,15 @@ const login = async (req, res) => {
         userExist.accessToken = accessToken;
         userExist.refreshToken = refreshToken;
         await userExist.save();
+
+        res.cookie('accessToken', accessToken, {
+            ...cookieOptions,
+            maxAge: 15 * 60 * 1000
+        });
+        res.cookie('refreshToken', refreshToken, {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         return res.status(200).json({
             message: "User login successful",
@@ -150,6 +174,15 @@ const refreshToken = async (req, res) => {
             user.refreshToken = newRefreshToken;
             await user.save();
 
+            res.cookie('accessToken', newAccessToken, {
+                ...cookieOptions,
+                maxAge: 15 * 60 * 1000
+            });
+            res.cookie('refreshToken', newRefreshToken, {
+                ...cookieOptions,
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
             return res.status(200).json({
                 message: "Tokens refreshed successfully",
                 accessToken: newAccessToken,
@@ -171,6 +204,8 @@ const logout = (req, res) => {
 
         const token = authHeader.split(' ')[1];
         tokenBlacklist.add(token);
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
 
         return res.status(200).json({ message: "Logged out successfully" });
     } catch (err) {
